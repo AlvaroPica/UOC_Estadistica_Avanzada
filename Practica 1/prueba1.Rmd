@@ -1,0 +1,94 @@
+---
+title: "Picatoste_preproceso"
+author: "Álvaro Picatoste"
+date: "9 de marzo de 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Práctica 1
+
+1-. Cargar el fichero de datos en R. Antes de cargar el fichero, se debe inspeccionar qué tipo de formato csv es para realizar la lectura apropiada.
+
+```{r}
+#Valor decimal separado por "." -> sistema ingles -> read.csv en vez de read.csv2
+mydata <- read.csv("2016_raw.csv")
+```
+
+2-. Cambiar los nombres de las variables que son muy largos por otros más cortos (al final del documento se especifica cómo).
+
+```{r}
+#Creo una función que inspecciona un vector y si contiene nombres separados por "." acorta automáticamente siguiendo las instrucciones del enunciado.
+
+short.variables <- function(input1, ...){
+for (i in 1:length(input1)){
+if (!grepl("\\.", (input1)[i])) {
+  next } 
+  else { 
+    separate.words <- strsplit(input1[i], "\\.")
+    number.of.words <- length(separate.words[[1]])
+    mystring <- c()
+    for (jj in 1:number.of.words){
+      myletter <- substr(separate.words[[1]][jj], 1,1)
+      mystring <- c(mystring, myletter)
+    }
+    
+    input1[i] <- paste(mystring, collapse = "")
+
+    }
+  }
+return(input1)  
+}
+
+#Aplico la función al vector que contiene el nombre de las variables
+
+names(mydata)
+names(mydata) <- short.variables(names(mydata))
+names(mydata)
+
+```
+
+3. Indicar el tipo de variable estadística de cada variable.
+
+```{r}
+#Estudio si las variables son categoricas-cualitativas(nominal u ordinal) ó cuantitativas (discreta o continua)
+
+sapply(mydata, class)
+summary(mydata)
+
+#Estudio con deteniminto HR,HS, GpC
+#Happiness Rank aparece como cuantitativa numérica pero debería ser cualitativa ordinal.
+#Happiness Score aparece como categórica pero debería ser númerica decimal.
+#GDP per capita aparece como categórica pero debería ser númerica decimal.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
