@@ -1,3 +1,4 @@
+
 data <- read.csv("2016_raw.csv")
 
 short.variables <- function(input1, ...){
@@ -28,3 +29,21 @@ str(data)
 class(data)
 sapply(data, class)
 summary(data)da
+
+
+sapply(mydata, class)
+
+cco <- "Categorica-cualitativa-ordinal"
+ccn <- "Categorica-cualitativa-nominal"
+cnd <- "Cuantitativa Discreta"
+cnc <- "Cuantitativa Continua"
+mis_categorias <- c(ccn, ccn, cco, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc)
+
+as.data.frame(setNames(mis_categorias, names(data)))
+
+#Se observa que las  variable HS, GpC debería ser numérica pero está definida como factor.
+#Se observa que la variable HR debería ser un factor pero está definida como integer.
+
+
+
+
