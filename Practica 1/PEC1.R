@@ -21,29 +21,35 @@ if (!grepl("\\.", (input1)[i])) {
 return(input1)  
 }
 
-var_names <- names(data)
-names(data) <- short.variables(var_names)
-names(data)
+long_names <- names(data)
+short_names <- short.variables(var_names)
+names(data) <- short_names 
 
-str(data)
-class(data)
-sapply(data, class)
-summary(data)da
+
+#Ejercicio 2
 
 
 sapply(mydata, class)
-
 cco <- "Categorica-cualitativa-ordinal"
 ccn <- "Categorica-cualitativa-nominal"
 cnd <- "Cuantitativa Discreta"
 cnc <- "Cuantitativa Continua"
 mis_categorias <- c(ccn, ccn, cco, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc)
-
-as.data.frame(setNames(mis_categorias, names(data)))
+mydf <- as.data.frame(setNames(mis_categorias, names(data)))
 
 #Se observa que las  variable HS, GpC debería ser numérica pero está definida como factor.
 #Se observa que la variable HR debería ser un factor pero está definida como integer.
 
+variables <- as.data.frame(cbind(long_names, short_names, mis_categorias))
+head(variables)
 
+sapply(data, class)
 
+head(data)
+
+data$HS <- as.numeric(as.character(data$HS))
+head(data$HS)
+
+Encoding("í")
+mydata.largo
 

@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 mydata <- read.csv("2016_raw.csv")
 ```
 
-2-. Cambiar los nombres de las variables que son muy largos por otros más cortos (al final del documento se especifica como).
+2-. Cambiar los nombres de las variables que son muy largos por otros mas cortos (al final del documento se especifica como).
 
 ```{r}
 #Creo una funcion que inspecciona un vector y si contiene nombres separados por "." acorta automaticamente siguiendo las instrucciones del enunciado.
@@ -51,13 +51,25 @@ names(mydata)
 
 ```
 
-3. Indicar el tipo de variable estadística de cada variable.
+3. Indicar el tipo de variable estadistica de cada variable.
 
 ```{r}
 #Estudio si las variables son categoricas-cualitativas(nominal u ordinal) o cuantitativas (discreta o continua)
 
 sapply(mydata, class)
-summary(mydata)
+
+cco <- "Categorica-cualitativa-ordinal"
+ccn <- "Categorica-cualitativa-nominal"
+cnd <- "Cuantitativa Discreta"
+cnc <- "Cuantitativa Continua"
+
+mis_categorias <- c(ccn, ccn, cco, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc)
+print(mis_categorias)
+
+length
+
+as.table(setNames(names(mydata), mis_categorias))
+
 
 #Estudio con deteniminto HR,HS, GpC
 #Happiness Rank aparece como cuantitativa numérica pero debera ser cualitativa ordinal.
