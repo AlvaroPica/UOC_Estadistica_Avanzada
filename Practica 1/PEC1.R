@@ -37,6 +37,8 @@ cnc <- "Cuantitativa Continua"
 mis_categorias <- c(ccn, ccn, cco, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc)
 mydf <- as.data.frame(setNames(mis_categorias, names(data)))
 
+mydf
+
 #Se observa que las  variable HS, GpC debería ser numérica pero está definida como factor.
 #Se observa que la variable HR debería ser un factor pero está definida como integer.
 
@@ -49,7 +51,4 @@ head(data)
 
 data$HS <- as.numeric(as.character(data$HS))
 head(data$HS)
-
-Encoding("í")
-mydata.largo
 
