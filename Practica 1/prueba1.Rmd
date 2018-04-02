@@ -148,8 +148,26 @@ data <- read.csv("2016_raw.csv")
 
 ```{r}
  
+  library(psych)
 
-    
+  #Representación de un BOXplot para cada variable (Agrupadas en variables con similares escalas para facilidad de analisis)
+   
+  boxplot(data[,4:6])
+  boxplot(data[,c(7:9,13)])
+  boxplot(data[,10:12])
+   
+  #Tabla con estimadores
+  
+  medidasROBUSTAS <- function(x) {
+     myvalues <- c(mean(x, na.rm = TRUE), median(x, na.rm = TRUE), mean(x, na.rm = TRUE, trim=), winsor.mean(x, na.rm = TRUE, trim=), sd(x, na.rm = TRUE),   IQR(x, na.rm = TRUE),  mad(x, na.rm = TRUE))
+     return(myvalues)
+    }
+
+    mytable <- round(sapply(data[,4:ncol(data)],medidasROBUSTAS),3)
+    medidas <- c("Media", "Mediana", "Media Recortada", "Media winsorizada", "Desviacion estandar", "Rango Intercuartilico (PIC)", "Desviación absoluta DAM")
+    dimnames(mytable)[[1]] <- medidas
+    mytable
+
 ```   
   
  9. Valores perdidos.
@@ -160,7 +178,13 @@ data <- read.csv("2016_raw.csv")
 
 ```{r}
  
-
+ #Busco NAs por columnas
+    
+   mycolswNA <-  colnames(data)[colSums(is.na(data)) > 0]
+   myrowswNA <-   which(rowSums(is.na(data)) > 0)
+   
+   sprintf("En la columna/columnas - %s - hay Valores perdidos. En las fila/filas - %s - hay valores perdidos", mycolswNA, myrowswNA)
+   
     
 ```  
 
@@ -169,6 +193,7 @@ data <- read.csv("2016_raw.csv")
 
 ```{r}
  
+   write.csv(data, file = "2016_preprocessed.csv")
 
     
 ``` 
