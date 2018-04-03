@@ -5,6 +5,8 @@
   data <- read.csv("2016_raw.csv")
 
 #Ejercicio 2
+  
+  short.variables(ejemplo1)
 
   short.variables <- function(input1, ...){
   for (i in 1:length(input1)){
@@ -80,12 +82,19 @@
     return(paste(s, sep="", collapse=" "))
   }
   
+  
   data$Country
   data$Country <- trimws(data$Country)
   data$Country <- sapply(data$Country, EstandarFOR)
   data$Country <- as.factor(data$Country)
- 
-  #data[4:ncol(data)] <- lapply(data[4:ncol(data)], function (x) ((x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE))) 
+  
+  data$Region <- trimws(data$Region)
+  data$Region <- gsub("SUB-SAHARAN  AFRCA", "SUB-SAHARAN AFRICA", data$Region)
+  data$Region <- gsub("MIDDLE EAST AND NORTHERN  AFRCA", "MIDDLE EAST AND NORTHERN AFRICA", data$Region)
+  data$Region <- as.factor(data$Region)
+  levels(data$Region)
+  
+#data[4:ncol(data)] <- lapply(data[4:ncol(data)], function (x) ((x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE))) 
  
 # Ejercicio 7
   
@@ -100,24 +109,63 @@
    
 # Ejercicio 8
    
-   # Buscar valores atípicos en las variables cuantitativas
-   # i. Presentar un boxplot para cada variable cuantitativa.
-   # ii. Realizar un cuadro con las estimaciones robustas y no robustas de tendencia central y dispersión
-   # de cada variable cuantitativa.
+   library(psych)
  
-   boxplot(data[4:ncol(data)])
-   names(data)
+   #Representación de un BOXplot para cada variable (Agrupadas en variables con similares escalas para facilidad de analisis)
    
-   
-# Ejercicio 9
-   
-   # library(VIM)
-   # which(is.na(data$Family))
-   # data$Family <- kNN(data$Family)
-   # which(is.na(data$Family))
-   # 
-   # mydata.completo <- kNN(mydata)
-  
+   boxplot(data[,4:6])
+   boxplot(data[,c(7:9,13)])
+   boxplot(data[,10:12])
 
+  
+   medidasROBUSTAS <- function(x) {
+     myvalues <- c(mean(x, na.rm = TRUE), median(x, na.rm = TRUE), mean(x, na.rm = TRUE, trim=), winsor.mean(x, na.rm = TRUE, trim=), sd(x, na.rm = TRUE), IQR(x, na.rm = TRUE),  mad(x, na.rm = TRUE))
+     return(myvalues)
+    }
+
+    mytable <- round(sapply(data[,4:ncol(data)],medidasROBUSTAS),3)
+    medidas <- c("Mean", "Median", "Media Recortada", "Media winsorizada", "Desviacion estandar", "Rango Intercuartilico (PIC)", "Desviación absoluta DAM")
+    dimnames(mytable)[[1]] <- medidas
+    mytable
+
+# Ejercicio 9
+    
+    #Busco NAs por columnas
+    
+   mycolswNA <-  colnames(data)[colSums(is.na(data)) > 0]
+   myrowswNA <-   which(rowSums(is.na(data)) > 0)
+   
+   sprintf("En la columna/columnas - %s - hay Valores perdidos. En las fila/filas - %s - hay valores perdidos", mycolswNA, myrowswNA)
+   
+   datafillinNA <- data[,7:ncol(data)]
+   str(datafillinNA)
+   
+   #Rellenar NAs en Familiy con las 6 últimas variables (GpC, Family, LE, Freedom, GC, GEnerosiity)
+   library(VIM)
+   mydata.completo <- kNN(datafillinNA, datafillinNA[,2], metric = NULL, k = 6)
+  
+   library(caret)
+
+   
    View(data)
   
+   
+   
+# Ejercicio 10
+   
+   
+   write.csv(data, file = "2016_preprocessed.csv")
+   
+   library(dplyr)
+   continent <- data %>% 
+     group_by(Region) %>% 
+     summarize(AverageHS = mean(HS))
+  
+   continent <- as.data.frame(continent)
+  str(continent)
+
+continent$Ordenados <- order(continent$AverageHS, decreasing = TRUE)
+View(continent)
+
+arrange(continent, desc(continent$AverageHS))   
+   

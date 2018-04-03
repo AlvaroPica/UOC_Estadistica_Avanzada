@@ -119,6 +119,13 @@ data <- read.csv("2016_raw.csv")
     data$Country <- as.factor(data$Country)
     head(data$Country)
     
+    #Corregimos las categorias de la variable Region
+    data$Region <- trimws(data$Region)
+    data$Region <- gsub("SUB-SAHARAN  AFRCA", "SUB-SAHARAN AFRICA", data$Region)
+    data$Region <- gsub("MIDDLE EAST AND NORTHERN  AFRCA", "MIDDLE EAST AND NORTHERN AFRICA", data$Region)
+    data$Region <- as.factor(data$Region)
+    levels(data$Region)
+    
 ```
 7. Revisar posibles inconsistencias entre variables.
     i. Lower.Confidence.Interval vs Upper.Confidence.Interval
@@ -192,7 +199,12 @@ data <- read.csv("2016_raw.csv")
     datos corregido.
 
 ```{r}
- 
+
+#
+
+
+#Generamos el archivo en la misma ubicacion que el proyecto:
+
    write.csv(data, file = "2016_preprocessed.csv")
 
     
