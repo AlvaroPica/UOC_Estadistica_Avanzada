@@ -1,13 +1,13 @@
 
 #Ejercicio 1 
 
+  #Requirements: dplyr, VIM, pysch
+
   #Valores separados por ; por lo que se utiliza read.csv y no read.csv2
-  data <- read.csv("2016_raw.csv")
+  mydata <- read.csv("2016_raw.csv")
 
 #Ejercicio 2
   
-  short.variables(ejemplo1)
-
   short.variables <- function(input1, ...){
   for (i in 1:length(input1)){
   if (!grepl("\\.", (input1)[i])) {
@@ -26,43 +26,43 @@
   return(input1)  
   }
   
-  long_names <- names(data)
+  long_names <- names(mydata)
   short_names <- short.variables(long_names)
-  names(data) <- short_names
-  names(data)
+  names(mydata) <- short_names
+  names(mydata)
 
 #Ejercicio 3
 
-  sapply(mydata, class)
+  sapply(mymydata, class)
   cco <- "Categorica-cualitativa-ordinal"
   ccn <- "Categorica-cualitativa-nominal"
   cnd <- "Cuantitativa Discreta"
   cnc <- "Cuantitativa Continua"
   mis_categorias <- c(ccn, ccn, cco, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc, cnc)
-  mydf <- as.data.frame(setNames(mis_categorias, names(data)))
+  mydf <- as.data.frame(setNames(mis_categorias, names(mydata)))
   mydf
 
 #Ejercicio 4
 
   #Se observa que las  variable HS, GpC debería ser numérica pero está definida como factor
   
-  data$HS <- as.character(data$HS)
-  data$HS <- data$HS <- gsub(",", ".", data$HS)
-  data$HS <- as.numeric(data$HS)
+  mydata$HS <- as.character(mydata$HS)
+  mydata$HS <- mydata$HS <- gsub(",", ".", mydata$HS)
+  mydata$HS <- as.numeric(mydata$HS)
   
-  data$GpC <- as.character(data$GpC)
-  data$GpC <- data$GpC <- gsub(",", ".", data$GpC)
-  data$GpC <- as.numeric(data$GpC)
+  mydata$GpC <- as.character(mydata$GpC)
+  mydata$GpC <- mydata$GpC <- gsub(",", ".", mydata$GpC)
+  mydata$GpC <- as.numeric(mydata$GpC)
   
   #Se observa que la variable HR debería ser un factor pero está definida como integer.
   
-  data$HR <- as.ordered(data$HR)
+  mydata$HR <- as.ordered(mydata$HR)
 
 #Ejercicio 5
   
   #Comprobamos si en las variables cuantitativas (eso es , desde la columna 4 hasta la ultima hay alguna coma)
   
-  comprobacion <- lapply(data[4:ncol(data)], function(x) any(grepl(",", x)))
+  comprobacion <- lapply(mydata[4:ncol(mydata)], function(x) any(grepl(",", x)))
   comprobacion
   #No hay más separadores decimales erroneos. Los únicos que había ya fueron corregidos al transformar la clase de la variable HR.
   
@@ -83,29 +83,29 @@
   }
   
   
-  data$Country
-  data$Country <- trimws(data$Country)
-  data$Country <- sapply(data$Country, EstandarFOR)
-  data$Country <- as.factor(data$Country)
+  mydata$Country
+  mydata$Country <- trimws(mydata$Country)
+  mydata$Country <- sapply(mydata$Country, EstandarFOR)
+  mydata$Country <- as.factor(mydata$Country)
   
-  data$Region <- trimws(data$Region)
-  data$Region <- gsub("SUB-SAHARAN  AFRCA", "SUB-SAHARAN AFRICA", data$Region)
-  data$Region <- gsub("MIDDLE EAST AND NORTHERN  AFRCA", "MIDDLE EAST AND NORTHERN AFRICA", data$Region)
-  data$Region <- as.factor(data$Region)
-  levels(data$Region)
+  mydata$Region <- trimws(mydata$Region)
+  mydata$Region <- gsub("SUB-SAHARAN  AFRCA", "SUB-SAHARAN AFRICA", mydata$Region)
+  mydata$Region <- gsub("MIDDLE EAST AND NORTHERN  AFRCA", "MIDDLE EAST AND NORTHERN AFRICA", mydata$Region)
+  mydata$Region <- as.factor(mydata$Region)
+  levels(mydata$Region)
   
-#data[4:ncol(data)] <- lapply(data[4:ncol(data)], function (x) ((x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE))) 
+#mydata[4:ncol(mydata)] <- lapply(mydata[4:ncol(mydata)], function (x) ((x-mean(x, na.rm = TRUE))/sd(x, na.rm = TRUE))) 
  
 # Ejercicio 7
   
-   a <- which(data$LCI > data$UCI)
-   fromLCItoUCI <- data$LCI[a]
-   fromUCItoLCI <- data$UCI[a]
-   data$LCI[a] <- fromUCItoLCI
-   data$UCI[a] <- fromLCItoUCI
-   which(data$LCI > data$UCI)
+   a <- which(mydata$LCI > mydata$UCI)
+   fromLCItoUCI <- mydata$LCI[a]
+   fromUCItoLCI <- mydata$UCI[a]
+   mydata$LCI[a] <- fromUCItoLCI
+   mydata$UCI[a] <- fromLCItoUCI
+   which(mydata$LCI > mydata$UCI)
    
-   data$HR <- order(data$HS, decreasing = TRUE)
+   mydata$HR <- order(mydata$HS, decreasing = TRUE)
    
 # Ejercicio 8
    
@@ -113,17 +113,16 @@
  
    #Representación de un BOXplot para cada variable (Agrupadas en variables con similares escalas para facilidad de analisis)
    
-   boxplot(data[,4:6])
-   boxplot(data[,c(7:9,13)])
-   boxplot(data[,10:12])
+   boxplot(mydata[,4:6])
+   boxplot(mydata[,c(7:9,13)])
+   boxplot(mydata[,10:12])
 
-  
    medidasROBUSTAS <- function(x) {
      myvalues <- c(mean(x, na.rm = TRUE), median(x, na.rm = TRUE), mean(x, na.rm = TRUE, trim=), winsor.mean(x, na.rm = TRUE, trim=), sd(x, na.rm = TRUE), IQR(x, na.rm = TRUE),  mad(x, na.rm = TRUE))
      return(myvalues)
     }
 
-    mytable <- round(sapply(data[,4:ncol(data)],medidasROBUSTAS),3)
+    mytable <- round(sapply(mydata[,4:ncol(mydata)],medidasROBUSTAS),3)
     medidas <- c("Mean", "Median", "Media Recortada", "Media winsorizada", "Desviacion estandar", "Rango Intercuartilico (PIC)", "Desviación absoluta DAM")
     dimnames(mytable)[[1]] <- medidas
     mytable
@@ -132,48 +131,49 @@
     
     #Busco NAs por columnas
     
-   mycolswNA <-  colnames(data)[colSums(is.na(data)) > 0]
-   myrowswNA <-   which(rowSums(is.na(data)) > 0)
+   mycolswNA <-  colnames(mydata)[colSums(is.na(mydata)) > 0]
+   myrowswNA <-   which(rowSums(is.na(mydata)) > 0)
    
    sprintf("En la columna/columnas - %s - hay Valores perdidos. En las fila/filas - %s - hay valores perdidos", mycolswNA, myrowswNA)
-   
-   datafillinNA <- data[,7:ncol(data)]
-   str(datafillinNA)
-   
-   
-   
+
    #Rellenar NAs en Familiy con las 6 últimas variables (GpC, Family, LE, Freedom, GC, GEnerosiity)
    library(VIM)
-   mydata.completo <- kNN(datafillinNA, datafillinNA[,2], metric = NULL, k = 6)
+   mymydata.completo <- kNN(mydatafillinNA, mydatafillinNA[,2], metric = NULL, k = 6)
   
    #Al no dar ningun resultado se prueba a imputar los valores perdidos con un modelo lineal simple:
-   lineal.model <- lm(Family ~ GpC + LE + Freedom + GC + Generosity + DR, data = data)
-   I <- is.na(data$Family)
-   data$Family[I] <- predict(lineal.model, newdata = data[I, ])
-   data$Family[1:10]
+   lineal.model <- lm(Family ~ GpC + LE + Freedom + GC + Generosity + DR, mydata = mydata)
+   I <- is.na(mydata$Family)
+   mydata$Family[I] <- predict(lineal.model, newmydata = mydata[I, ])
+   mydata$Family[1:10]
 
    #Se aprecia como los valores de las posiciones 3 y 7 han sido imputados por 1.107697 y 1,070216 respectivamente.
    
 # Ejercicio 10
    
-   write.csv(data, file = "2016_preprocessed.csv")
+   sprintf("Del estudio de los datos sobre felicidad en diferentes paises se desprenden algunas conclusiones interesentantes: 1. El país con mayores indices de
+           felicided es Dinamarca (Hapiness Score de 7.526) mientras el que menos es Burundi (Score de 2.905).") 
+   
+   summary(mydata)
+   
+   sprintf("En cuanto a Regiones. Aunque varios paises de Europa Occidental aparecen en Cabeza, los mayores indices se encuentran en Australia y Nueva Zelenda (media de 7.32) y
+           los menores en el Africa Sub-sahariana (media de 4.14)") 
    
    library(dplyr)
-   continent <- data %>% 
+   continent <- mydata %>% 
      group_by(Region) %>% 
      summarize(AverageHS = mean(HS))
      continent <- as.data.frame(continent)
    arrange(continent, desc(continent$AverageHS))   
    
-   summary(data)
-plot(data$HS, data$GpC)
-plot(data$HS, data$Freedom)
-plot(data$HS, data$Generosity)
-plot(data$HS, data$Family)
-   sprintf("Del estudio de los datos sobre felicidad en los diferentes paises se desprenden algunas conclusiones interesentantes") 
+   sprintf("La variable que más correlación directa guarda con el indice de felicidad es el GDP per Capita, aunque como sabemos, esto no implica que el dinero 
+           dé la felicidad (aunque tal vez si ayude a conseguirla")
+   cor(mydata[, c(4:ncol(mydata))])
+   plot(mydata$HS, mydata$GpC)
+
+   sprintf("Se adjunta el archivo pre-procesado en formato .CSV para un estudio más en profundidad")
    
-   nrow(data)
-   length(levels(data$Region))
-   Se ha estudiado 157 paises de 10 regiones diferentes. El pais con mayor ranking de felicidad es y con menos felicidad Burundi. Respecto a las regiones. la mas felic es , siendo la que menos 
-   el Africa subsahariana. 
+   head(mydata)
+   write.csv(mydata, file = "Picatoste_fichero_clean.csv")
    
+   
+            
