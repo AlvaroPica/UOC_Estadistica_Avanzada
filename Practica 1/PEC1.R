@@ -140,19 +140,21 @@
    datafillinNA <- data[,7:ncol(data)]
    str(datafillinNA)
    
+   
+   
    #Rellenar NAs en Familiy con las 6 últimas variables (GpC, Family, LE, Freedom, GC, GEnerosiity)
    library(VIM)
    mydata.completo <- kNN(datafillinNA, datafillinNA[,2], metric = NULL, k = 6)
   
-   library(caret)
+   #Al no dar ningun resultado se prueba a imputar los valores perdidos con un modelo lineal simple:
+   lineal.model <- lm(Family ~ GpC + LE + Freedom + GC + Generosity + DR, data = data)
+   I <- is.na(data$Family)
+   data$Family[I] <- predict(lineal.model, newdata = data[I, ])
+   data$Family[1:10]
 
-   
-   View(data)
-  
-   
+   #Se aprecia como los valores de las posiciones 3 y 7 han sido imputados por 1.107697 y 1,070216 respectivamente.
    
 # Ejercicio 10
-   
    
    write.csv(data, file = "2016_preprocessed.csv")
    
@@ -160,12 +162,18 @@
    continent <- data %>% 
      group_by(Region) %>% 
      summarize(AverageHS = mean(HS))
-  
-   continent <- as.data.frame(continent)
-  str(continent)
-
-continent$Ordenados <- order(continent$AverageHS, decreasing = TRUE)
-View(continent)
-
-arrange(continent, desc(continent$AverageHS))   
+     continent <- as.data.frame(continent)
+   arrange(continent, desc(continent$AverageHS))   
+   
+   summary(data)
+plot(data$HS, data$GpC)
+plot(data$HS, data$Freedom)
+plot(data$HS, data$Generosity)
+plot(data$HS, data$Family)
+   sprintf("Del estudio de los datos sobre felicidad en los diferentes paises se desprenden algunas conclusiones interesentantes") 
+   
+   nrow(data)
+   length(levels(data$Region))
+   Se ha estudiado 157 paises de 10 regiones diferentes. El pais con mayor ranking de felicidad es y con menos felicidad Burundi. Respecto a las regiones. la mas felic es , siendo la que menos 
+   el Africa subsahariana. 
    
