@@ -3,7 +3,8 @@
 
 library(dplyr)
 library(VIM)
-library(pysch)
+library(psych)
+library(data.table)
 getwd()
 
 #1-. Cargar el fichero de datos en R. Antes de cargar el fichero, se debe inspeccionar que tipo de formato csv es para realizar la lectura apropiada.
@@ -200,3 +201,5 @@ plot(mydata$HS, mydata$GpC)
 print("Se adjunta el archivo pre-procesado en formato .CSV para un estudio más en profundidad")
 head(mydata)
 #write.csv(mydata, file = "Picatoste_fichero_clean.csv")
+
+save.image("./misdatospractica1.Rdata")

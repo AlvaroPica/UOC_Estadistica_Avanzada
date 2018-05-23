@@ -1,0 +1,104 @@
+---
+title: "A3"
+author: "Alvaro Picatoste"
+date: "23 de mayo de 2018"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+```
+
+## Comentario
+
+Parto del dataset generado en la actividad A1 para generar el modelo lineal con los predictores indicados. Para ello cargo los datos que previamente he guardado tras ejecutar el script de la practica A1 y obtengo el objeto dataframe mydata a partir del cual empiezo a trabajar en la practica A3.
+
+```{r }
+load('misdatospractica1.RData')
+head(mydata)
+```
+
+## EJECICIO 1
+
+### Ejercicio 1.1
+
+Estimar por mínimos cuadrados ordinarios un modelo lineal que explique la puntuación de felicidad (HS) de un país en función de tres factores cuantitativos: el indicador de renta por cápita (GpC), la esperanza de vida en salud (LE) y la corrupción (GC).Evaluar la bondad de ajuste a través del coeficiente de determinación (R2). Podéis usar la instrucción de R lm.
+
+```{r }
+HS_PredictorModel_3p <- lm(HS ~ GpC + LE + GC, mydata)
+summary(HS_PredictorModel_3p)
+varImp(HS_PredictorModel_3p, scale = FALSE)
+```
+
+El coeficiente de determinación es de . es decir, el de la varianza de se explcia con. Se muestran unas graficas para discuitr el modelo:
+
+```{r }
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(HS_PredictorModel_3p$resid~mydata$HS[order(mydata$HS)],
+            main="HS x Residuals\nfor Multiple Regression with 3 predictors",
+            xlab="HS", ylab= "Residuals")
+abline(h=0,lty=2)
+hist(HS_PredictorModel_3p$resid, main = "Histogram of Residuals", ylab = "Residuals")
+qqnorm(HS_PredictorModel_3p$resid)
+qqline(HS_PredictorModel_3p$resid)
+```
+
+### Ejercicio 1.2
+
+Estimar por mínimos cuadrados ordinarios un modelo lineal que explique la puntuación de felicidad (HS) de un país en función de cuatro factores. Además de los tres anteriores (renta, esperanza de vida y corrupción) ahora se añade la región del mundo (región). Usar como categoría de referencia la región “Western Europe” (para ello usar el factor combinado con relevel(region, ref = “Western Europe”)). 
+Evaluar la bondad del ajuste a través del coeficiente de determinación (R2) y comparar el resultado de este model con el obtenido en el apartado 1.1. Podéis usar la instrucción de R lm y usar el coeficiente R-cuadrado ajustado en la comparación. Interpretar también el significado de los coeficientes obtenidos y su significación estadística.
+
+```{r }
+levels(mydata$Region) <- relevel(mydata$Region, ref = "WESTERN EUROPE")
+HS_PredictorModel_4p <- lm(HS ~ Region + GpC + LE + GC, mydata)
+summary(HS_PredictorModel_4p)
+varImp(HS_PredictorModel_4p, scale = FALSE)
+```
+
+El coeficiente de determinación es de . es decir, el de la varianza de se explcia con. Se muestran unas graficas para discuitr el modelo:
+
+```{r }
+layout(matrix(c(1,1,2,3),2,2,byrow=T))
+plot(HS_PredictorModel_4p$resid~mydata$HS[order(mydata$HS)],
+            main="HS x Residuals\nfor Multiple Regression with 4 predictors",
+            xlab="HS", ylab= "Residuals")
+abline(h=0,lty=2)
+hist(HS_PredictorModel_4p$resid, main = "Histogram of Residuals", ylab = "Residuals")
+qqnorm(HS_PredictorModel_4p$resid)
+qqline(HS_PredictorModel_4p$resid)
+```
+
+### Ejercicio 1.3
+
+Suponer un país de la región de Europa Occidental (Western Europe), con una renta de 1.5, una esperanza de vida en salud del 69% y un índice de corrupción de 0.35. Realizar la predicción con los dos modelos. Interpretar los resultados.
+
+```{r }
+GpC_example <- 1.5
+LE_example <- 0.69
+GC_example <- 0.35
+
+newcountry <- list("Country" = "WonderLand" , "Region" = "WESTERN EUROPE", "HR" = 0, "HS" = 0, "LCI" = 0, "UCI" = 0, "GpC" = GpC_example, "Family" = 0, "LE" = LE_example, "Freedom" = 0, "GC" = GC_example, "Generosity" = 0, "DR" = 0)
+mydata_bis <- mydata
+mydata_bis[,'Country'] <- as.character(mydata_bis[,"Country"])
+mydata_bis[,'Region'] <- as.character(mydata_bis[,"Region"])
+mydata_bis <- rbind(mydata_bis, newcountry)
+
+mysolution_3p <- predict(HS_PredictorModel_3p, mydata_bis[158,])
+mysolution_3pb <- predict(HS_PredictorModel_3p,list("GpC" = GpC_example, "LE" = LE_example, "GC" = GC_example))
+
+mysolution_4p <- predict(HS_PredictorModel_4p, mydata_bis[158,])
+
+mysolution_3p
+mysolution_4p
+```
+
+
+## EJERCICIO 2
+
+
+```{r pressure, echo=FALSE}
+
+```
+
