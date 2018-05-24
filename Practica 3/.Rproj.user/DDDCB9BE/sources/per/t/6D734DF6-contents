@@ -32,7 +32,9 @@ summary(HS_PredictorModel_3p)
 varImp(HS_PredictorModel_3p, scale = FALSE)
 ```
 
-El coeficiente de determinación es de . es decir, el de la varianza de se explcia con. Se muestran unas graficas para discuitr el modelo:
+De los resultados anteriores vemos como el Coefficiente de determinación es de 0.6917. Aproximadamente un 69% de la varianza total de los datos es explicada por el modelo de regresión. No es un valor a priori demasiado alto. De los predictores, la variable que más impacto tiene sobre la variable predicha es la renta per cápita.
+
+Se analizan a continuación los residuos a través de su representación en la que para modelos aceptables cabe esperar una grafica con puntos distribuidos alrededor del cero, sin estructura observable.
 
 ```{r }
 layout(matrix(c(1,1,2,3),2,2,byrow=T))
@@ -45,6 +47,8 @@ qqnorm(HS_PredictorModel_3p$resid)
 qqline(HS_PredictorModel_3p$resid)
 ```
 
+Se obseva que si bien los valores oscilan al rededor del 0 con una media cercana a este valor, hay cierta relación lineal inversa, cuanto mayor el HS, mas negativo el error. Es decir, para scores altos de felicidad, el modelo tiende a predecir valores mayores que los reales, mientras que para valores pequeños del Score el modelo tiende a predecir valores menores. La distribución es normal (como cabia esperar).
+
 ### Ejercicio 1.2
 
 Estimar por mínimos cuadrados ordinarios un modelo lineal que explique la puntuación de felicidad (HS) de un país en función de cuatro factores. Además de los tres anteriores (renta, esperanza de vida y corrupción) ahora se añade la región del mundo (región). Usar como categoría de referencia la región “Western Europe” (para ello usar el factor combinado con relevel(region, ref = “Western Europe”)). 
@@ -54,10 +58,9 @@ Evaluar la bondad del ajuste a través del coeficiente de determinación (R2) y 
 levels(mydata$Region) <- relevel(mydata$Region, ref = "WESTERN EUROPE")
 HS_PredictorModel_4p <- lm(HS ~ Region + GpC + LE + GC, mydata)
 summary(HS_PredictorModel_4p)
-varImp(HS_PredictorModel_4p, scale = FALSE)
 ```
 
-El coeficiente de determinación es de . es decir, el de la varianza de se explcia con. Se muestran unas graficas para discuitr el modelo:
+Analogamente al ejercicio 1.1 se hace un gráfico para observar la distribución de los errores:
 
 ```{r }
 layout(matrix(c(1,1,2,3),2,2,byrow=T))
@@ -70,35 +73,168 @@ qqnorm(HS_PredictorModel_4p$resid)
 qqline(HS_PredictorModel_4p$resid)
 ```
 
+Cuando añadimos un predictor más (la región) se observa que el coeficiente de determinación ajustado, pasa de 0.6856 con 3 predictores a 0.6942, aumentando casi un punto porcentual. Por lo tanto, al añadir una variable predictora se consigue  aumentar la varianza que el modelo consigue explicar y se incrementa la bondad del ajuste, aunque sólo ligaremente.
+
 ### Ejercicio 1.3
 
 Suponer un país de la región de Europa Occidental (Western Europe), con una renta de 1.5, una esperanza de vida en salud del 69% y un índice de corrupción de 0.35. Realizar la predicción con los dos modelos. Interpretar los resultados.
 
 ```{r }
+
 GpC_example <- 1.5
 LE_example <- 0.69
 GC_example <- 0.35
 
-newcountry <- list("Country" = "WonderLand" , "Region" = "WESTERN EUROPE", "HR" = 0, "HS" = 0, "LCI" = 0, "UCI" = 0, "GpC" = GpC_example, "Family" = 0, "LE" = LE_example, "Freedom" = 0, "GC" = GC_example, "Generosity" = 0, "DR" = 0)
+#Añadimos el nuevo pais con NAs en aquellos datos no proporcionados
+newcountry <- list("Country" = "WonderLand" , "Region" = as.factor("WESTERN EUROPE"), "HR" = NA, "HS" = NA, "LCI" = NA, "UCI" = NA, "GpC" = GpC_example, "Family" = NA, "LE" = LE_example, "Freedom" = NA, "GC" = GC_example, "Generosity" = NA, "DR" = NA)
 mydata_bis <- mydata
 mydata_bis[,'Country'] <- as.character(mydata_bis[,"Country"])
-mydata_bis[,'Region'] <- as.character(mydata_bis[,"Region"])
 mydata_bis <- rbind(mydata_bis, newcountry)
 
 mysolution_3p <- predict(HS_PredictorModel_3p, mydata_bis[158,])
-mysolution_3pb <- predict(HS_PredictorModel_3p,list("GpC" = GpC_example, "LE" = LE_example, "GC" = GC_example))
-
 mysolution_4p <- predict(HS_PredictorModel_4p, mydata_bis[158,])
 
-mysolution_3p
-mysolution_4p
+print(c(mysolution_3p, mysolution_4p))
+
+#Imputación del resultado con el mejor modelo
+mydata_bis[158, 'HS'] <- mysolution_4p
+tail(mydata_bis)
 ```
 
+El Score obtenido con 3 predictores es de 6.688 mientra que con 4 predictores des de 6.699. Con esta puntuación el nuevo país, al que hemos llamado WonderLand, ocuparía el puesto 20 en el ranking de felicidad.
 
 ## EJERCICIO 2
 
+### Ejercicio 2.1
 
-```{r pressure, echo=FALSE}
+Estimar el modelo de regresión logística donde la variable dependiente es “best” y las explicativas son el indicador de renta por cápita (GpC) y la corrupción (GC). No incluimos la esperanza de vida puesto que pensamos que queda ya representada con la riqueza en la renta por cápita. Evaluar si alguno de los regresores tiene influencia significativa (p-valor del contraste individual inferior al 5%).
 
+Se genera la variable dependiente a partir del criterio seleccionado y se crea un modelo de regresión logística utilizando como dataset de entrenamiento 75% del dataset original y un 25% para testear el modelo.
+
+```{r }
+library(caret)
+dataLG <- mydata
+dataLG$Grupo <- factor(ifelse(dataLG$HR <= 32, "best", "worse"), levels = c("worse","best"))
+set.seed(1000)
+traindataset <- createDataPartition(dataLG$HR, p=0.75, list = FALSE)
+logitmodel <- glm(Grupo ~ GpC + GC, data = dataLG[traindataset,], family = binomial)
+summary(logitmodel)
 ```
 
+Se observa como el GpC tiene una signtificantiva influencia debido a su bajo Pvalue.
+Se comprueba a continuación como funciona el modelo con un nuevo dataset. Se asume que probabilidades en la respuesta superiores a 50% son aciertos del modelo.
+
+```{r }
+dataLG[-traindataset, "Probabilidad_Acierto"] <- predict(logitmodel, newdata = dataLG[-traindataset, ], type = "response" )
+dataLG[-traindataset, "Acierto"] <- ifelse(dataLG[-traindataset, "Probabilidad_Acierto"] >= 0.5,1,0)
+table(dataLG[-traindataset, "Grupo"], dataLG[-traindataset, "Acierto"], dnn=c("Real", "Predicho"))
+```
+
+La matriz de confusión del clasificador nos permite saber en cuantos casos el modelo ha clasificado bien y en cuantos mal. Se ha testeado sobre una muestra de 37 paises (los que no habian entrado en el dataset de entrenamiento), en la que había 32 casos de paises que no entran en el mejor ranking y 5. De los 32 negativos el modelo ha clasificado 30 correctamente y 2 como positivos (falsos positivos). De los 5 paises dentro de "best" el algoritmo ha clasificado bien 3 mientras que ha errado en 2 (Falsos Negativos).
+
+### Ejercicio 2.2 
+
+Predicción en el modelo lineal generalizado (modelo de regresión logística). Usando el modelo anterior, calculad la probabilidad de ser uno dels 32 países más felices del mundo para un país que tiene una renta de 1.5, y un índice de corrupción de 0.35.
+
+```{r }
+GpC <- 1.5
+GC <- 0.35
+solution <- predict (logitmodel, newdata = list("GpC" = GpC, "GC" = GC), type = 'response')
+round(solution*100,2)
+```
+
+En el caso del pais con estos datos es muy probable (96.93%) que pertenezca al grupo de los mejores 32 paises, al fin y al cabo tiene un valor de GpC, una de las variables que mas impacta en la clasificación muy alto (media de 0.95 para todos los paises). Además, es un pais que ya vimos en el ejercicio 1 que ocuparia la posición 20 (Aunque en este caso no hemos tenido en cuenta el tercer predictor, la esperanza de vida).
+
+### Ejercicio 2.3 
+
+Buscar un modelo mejor al anterior añadiendo más variables explicativas. Se realizarán las siguientes pruebas:
+-Modelo regresor que añade al anterior la variable libertad (Freedom).
+-Modelo regresor que añade la región.
+-Modelo regresor que añade libertad y región.
+Decidir si se prefiere el modelo inicial o bien uno de los modelos con freedom, con región, o con ambas. El criterio para decidir el mejor modelo es AIC. Cuanto más pequeño es AIC mejor es el modelo.
+
+```{r }
+logitmodel_freedom <- glm(Grupo ~ GpC + GC + Freedom, data = dataLG[traindataset,], family = binomial)
+logitmodel_Region <- glm(Grupo ~ GpC + GC + Region, data = dataLG[traindataset,], family = binomial)
+logitmodel_freeReg <- glm(Grupo ~ GpC + GC + Freedom + Region, data = dataLG[traindataset,], family = binomial)
+
+```
+Estudiando los tres modelos resultantes se observa como el modelo que incluye tanto la Region como la libertad obtiene el valor de AIC más bajo (AIC = 61.411). Frente al modelo inicial (AIC=70.762) se ha conseguido una notable mejora. Si observamos la nueva matriz de confusión:
+
+```{r }
+dataLG[-traindataset, "Probabilidad_Acierto"] <- predict(logitmodel_freeReg, newdata = dataLG[-traindataset, ], type = "response" )
+dataLG[-traindataset, "Acierto"] <- ifelse(dataLG[-traindataset, "Probabilidad_Acierto"] >= 0.5,1,0)
+table(dataLG[-traindataset, "Grupo"], dataLG[-traindataset, "Acierto"], dnn=c("Real", "Predicho"))
+
+```
+Vemos que hay un valor acertado más dentro del grupo "best" con el modelo que incluye los dos predictores nuevos. 
+
+###Ejercicio 2.4 
+
+Calcular la matriz de confusión del mejor modelo del apartado 2.3 suponiendo un umbral de discriminación del 80%. Observad cuantos falsos negativos hay e interpretar qué es un falso negativo en este contexto. 
+
+```{r}
+dataLG[-traindataset, "Probabilidad_Acierto"] <- predict(logitmodel_freeReg, newdata = dataLG[-traindataset, ], type = "response" )
+dataLG[-traindataset, "Acierto"] <- ifelse(dataLG[-traindataset, "Probabilidad_Acierto"] >= 0.8,1,0)
+table(dataLG[-traindataset, "Grupo"], dataLG[-traindataset, "Acierto"], dnn=c("Real", "Predicho"))
+```
+
+En este caso el ejercicio nos solicita un umbral de discriminación más estricto. Subimos la probabilidad para clasificar un resultado como "Aciertos" a 80% (antes hemos estado trabajando con 50%). 
+Hemos tenido 2 falsos negativos sobre el test set. Es decir, en dos ocasiones se ha descartado un pais para pertenecer al grupo "best" cuando en realidad si que pertenece a este grupo (una lástima para ellos no poder recibir dicha etiqueta por un error del modelo)
+
+
+###Ejercicio 2.5 
+
+Establecer un nivel de probabilidad (umbral de discriminación a partir del cual pensáis que el país tiene muchas posibilidades de estar entre los mejores, por ejemplo podéis escoger el 80%). Comparar el nivel de probabilidad que da el modelo con el ránquing del país e identificar los países que no se comportan según lo esperado. Podéis realizar este estudio gráficamente.
+```{r results = 'hide', message = FALSE}
+library(dplyr)
+```
+
+```{r}
+logitmodel_freeReg_ej5 <- glm(Grupo ~ GpC + GC + Freedom + Region, data = dataLG, family = binomial)
+dataex5 <- cbind(mydata, "Probabilidad" = logitmodel_freeReg_ej5$fitted.values)
+dataex5afiltered <- dataex5 %>% filter(Probabilidad > 0.80)
+par(mfrow=c(1,1))
+plot(HR~Probabilidad, xlim = c(0.80, 1), 
+     xlab = 'Probabilidad de pertenecer a la clase best', 
+     ylab = 'Ranking de Felicidad (HR)',
+     main = 'HR vs Probabilidad de pertenecer a clase "best" ',
+     data = dataex5afiltered)
+with(dataex5afiltered, text(HR~Probabilidad, labels = dataex5afiltered$Country, pos = 2, cex = 0.6))
+```
+
+Se observa que hay un pais que de acuerdo al modelo debería situarse dentro de la categoria best pero que de acuerdo al criterio seleccionado (se pertenece a best si y solo si se está entre los 32 paises con mejor HS) no pertenece a esta categoria. Es posible que este tengan valores en otras variables también significativas que no se tienen en cuenta en el modelo (Sólo se tienen en consideración 4 de las 9 variables que afectan al Hapiness Score) unos valores que tienen un fuerte impacto en el resultado de HS y que lo saca de la categoria best aunque a priori cabria esperar que estuviera. En este caso Qatar será muy dificil que un modelo no lo categoriza como "best" aunque sepamos que no lo es.
+
+Analogamente hay otros paises que quedan muy por debajo de este umbral en cuanto a probabilidad. Si filtramos aquellos paises que pertenecen a la clase best pero que han obtenido una puntuación muy baja en el modelo, encontramos evarios casos llamativos, todos con Probabilides de ser catalogados como de esta clase por debajo del 20%. Evidentemente, en un escenario así, estos paises nunca serían clasificados como "best".
+
+```{r}
+dataex5bfiltered <- dataex5 %>% filter(Probabilidad < 0.2 & HR < 32)
+par(mfrow=c(1,1))
+plot(HR~Probabilidad, xlim = c(0, 0.50), 
+     xlab = 'Probabilidad de pertenecer a la clase best', 
+     ylab = 'Ranking de Felicidad (HR)',
+     main = 'HR vs Probabilidad de pertenecer a clase "best" ',
+     data = dataex5bfiltered)
+with(dataex5bfiltered, text(HR~Probabilidad, labels = dataex5bfiltered$Country, pos = 2, cex = 0.6))
+```
+
+Estos analisis nos permiten ver como con las variables seleccionadas en la regresión logistica habrá siempre varios casos de Falsos Positivos (como Qatar) y Falsos Negativos (como por ejemplo Israel, que teniendo un ranking muy alto, su probabilidad era bajisima de acuerdo al modelo.)
+
+Habrá que diseñar un nuevo modelo que recoja las razones por las cuales estas desviaciones están teniendo lugar a través de nuevas variables predictivas.
+
+###Ejercicio 2.6 
+
+Establecer un nivel de probabilidad (umbral de discriminación a partir del cual pensáis que el país tiene muchas posibilidades de estar entre los mejores, por ejemplo podéis escoger el 80%). Comparar el nivel de probabilidad que da el modelo con el ránquing del país e identificar los países que no se comportan según lo esperado. Podéis realizar este estudio gráficamente.
+
+```{r results = 'hide', message = FALSE}
+library(pROC)
+library(dplyr)
+```
+
+```{r results = 'hide'}
+#Para dibujar la curva ROC tomo el dataset test sobre el que hemos construido las matrices de confusion previamente. 
+testdf <- dataLG[-traindataset,]
+roc_obj <- roc(testdf$Grupo, testdf$Acierto)
+auc(roc_obj)
+plot.roc(roc_obj)
+```

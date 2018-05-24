@@ -14,9 +14,7 @@ getwd()
 #Valores separados por ; por lo que se utiliza read.csv y no read.csv2
 mydata <- read.csv("2016_raw.csv")
 
-
 #2-. Cambiar los nombres de las variables que son muy largos por otros mas cortos (al final del documento se especifica como).
-
 #Creo una funcion que inspecciona un vector y si contiene nombres separados por "." acorta automaticamente siguiendo las instrucciones del enunciado.
 
 short.variables <- function(input1, ...){

@@ -1,0 +1,3 @@
+"0","logitmodel_freedom <- glm(Grupo ~ GpC + GC + Freedom, data = dataLG[traindataset,], family = binomial)"
+"0","logitmodel_Region <- glm(Grupo ~ GpC + GC + Region, data = dataLG[traindataset,], family = binomial)"
+"0","logitmodel_freeReg <- glm(Grupo ~ GpC + GC + Freedom + Region, data = dataLG[traindataset,], family = binomial)"
