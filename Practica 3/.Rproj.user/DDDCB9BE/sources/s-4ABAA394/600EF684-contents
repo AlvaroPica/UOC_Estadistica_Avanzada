@@ -3,10 +3,10 @@ source('practica1script.R')
 library(caret)
 library(rmarkdown)
 
-#Crear un modelo de RLM para predecir la puntuaciÛn de la felicidad (HS) a partir de:
-# - Indicador de renta per c·pita (GpC)
+#Crear un modelo de RLM para predecir la puntuaci√≥n de la felicidad (HS) a partir de:
+# - Indicador de renta per c√°pita (GpC)
 # - Esperanza de vida en salud (LE)
-# - CorrupciÛn (GC)
+# - Corrupci√≥n (GC)
 head(mydata)
 HS_PredictorModel_3p <- lm(HS ~ GpC + LE + GC, mydata)
 summary(HS_PredictorModel_3p)

@@ -20,7 +20,7 @@ load('misdatospractica1.RData')
 head(mydata)
 ```
 
-## EJECICIO 1
+## EJERCICIO 1
 
 ### Ejercicio 1.1
 
@@ -121,7 +121,8 @@ logitmodel <- glm(Grupo ~ GpC + GC, data = dataLG[traindataset,], family = binom
 summary(logitmodel)
 ```
 
-Se observa como el GpC tiene una signtificantiva influencia debido a su bajo Pvalue.
+Se observa como el GpC tiene una signtificantiva influencia debido a su bajo Pvalue. El P-Value para cada variable predictora comprueba la hipótesis nula de que el coefficiente correspondiente a dicha variable es 0, es decir, que no tiene influencia. Dado que el valor de ambas variables es bajo (siendo el de GpC ordenes de magnitud menor)y que se situa por debajo de 0.05 podemos rechazar la hipotesis nula y asumir que las variables tienen influencia en el modelo porque cambios en las correspondientes variables predictoras tendrán cambios en la variable respuesta o variable dependiente (en este caso el HS).
+
 Se comprueba a continuación como funciona el modelo con un nuevo dataset. Se asume que probabilidades en la respuesta superiores a 50% son aciertos del modelo.
 
 ```{r }
@@ -224,7 +225,7 @@ Habrá que diseñar un nuevo modelo que recoja las razones por las cuales estas de
 
 ###Ejercicio 2.6 
 
-Establecer un nivel de probabilidad (umbral de discriminación a partir del cual pensáis que el país tiene muchas posibilidades de estar entre los mejores, por ejemplo podéis escoger el 80%). Comparar el nivel de probabilidad que da el modelo con el ránquing del país e identificar los países que no se comportan según lo esperado. Podéis realizar este estudio gráficamente.
+Realizar el dibujo de la curva ROC (usando la librería pROC y la instrucción roc y el plot del objeto resultante). Calcular AUROC usando también este paquete, auc(. . . ) donde debéis pasar el nombre del objeto roc. Interpretar el resultado. 
 
 ```{r results = 'hide', message = FALSE}
 library(pROC)
@@ -234,7 +235,16 @@ library(dplyr)
 ```{r results = 'hide'}
 #Para dibujar la curva ROC tomo el dataset test sobre el que hemos construido las matrices de confusion previamente. 
 testdf <- dataLG[-traindataset,]
+glm_response_scores <- predict(HS_PredictorModel_4p, testdf, type = "response")
+testdf <- dataLG[-traindataset,]
 roc_obj <- roc(testdf$Grupo, testdf$Acierto)
 auc(roc_obj)
-plot.roc(roc_obj)
+plot(roc(testdf$Grupo, glm_response_scores , direction="<"),
+     col="blue", lwd=3, main="ROC Curve GLM model")
 ```
+
+En problemas de clasificación binaria los predictores devuelven normalmente un valor continuo (probabilidad, entre 0 y 1) y este valor debe ser convertido a 0 o a 1 fijando un umbral. Un umbral alto significa ser conservador, disminuiran los falsos positivos por un lado pero se perderan muchos casos que son positivos y seran catalogados como negativos. Un Umbral bajo es tomar una posición mçás liberal, ser menos especifco y mas sensitivo, aumentando los true positives pero tambien los false positives.
+
+Las curvas ROC se utilizan para analizar como de bien nuestro modelo separa casos positivos de negativos y para identificar el umbral mas adecuado. plotean kis TruePositiveRates (TPR) contra FalsePositiveRates (FPR). Para diferentes modelos traajando en la misma clasificacion escogeriamos el modelo con el area debajo de la curva más grande. El area de la curva ROC para este modelo es de 0.869.
+
+Cada punto de la curva ROC se puede entender como un clasificador. Estos mini clasificadores utilizan la puntiuacion que el punto obtivo como punto frontera entre positivos y negativos. Para elegir el umbral adecuado se construyen lineas de precision ISO y se toma la que mayor de (normalmente el punto mas alejado de la diagonal del grafico). En nuestro ejemplo, el umbral idoneao se situa entorno al 80%.
