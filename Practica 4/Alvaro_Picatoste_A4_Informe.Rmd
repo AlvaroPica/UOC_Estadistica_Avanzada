@@ -1,0 +1,80 @@
+---
+title: "A4"
+author: "Alvaro Picatoste"
+date: "19 de junio de 2018"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+library(dplyr)
+library(ggplot2)
+```
+
+## EJERCICIO 1
+
+### Ejercicio 1.1
+
+Cargar el fichero de datos “Fumadores.csv”.
+
+```{r }
+df <- read.csv(file = './Fumadores.csv')
+
+```
+
+### Ejercicio 1.2
+
+Consultar los tipos de datos de las variables y si es necesario, aplicar las conversiones apropiadas. Averiguar
+posibles inconsistencias en los valores de Tipo o AE. En caso de que existan inconsitencias, corregidlas.
+
+```{r }
+str(df)
+
+#Corregimos los factores (sólo debería haber 6 niveles: NF, FP, NI, FL, FM, FI). 
+
+levels(df$Tipo) <- list(NF = "NF", FP = "FP", NI = c("NI", "ni"), FL = c("FL", "fL"), FM = "FM", FI = "FI")
+str(df)
+```
+
+### Ejercicio 1.3
+
+Realizar un análisis descriptivo de la muestra en su totalidad en relación a la variable AE.
+
+```{r }
+summary(df$AE)
+```
+
+### Ejercicio 1.4
+
+Analizar los datos según el tipo de fumador. Mostrar el número de personas en cada tipo de fumador, la media de AE de cada tipo de fumador y un gráfico que muestre esta media. Se recomienda ordenar el gráfico de menos a más AE. Luego, se debe representar un boxplot donde se muestre la distribución de AE por cada tipo.
+
+```{r }
+resumen <- df %>% group_by(Tipo) %>% summarize(Media.Por.Tipo = mean(AE),
+                                               Numero.Personas = length(AE))
+print(resumen)
+g <- ggplot(resumen, aes(x = reorder(Tipo, -Media.Por.Tipo), y = Media.Por.Tipo)) + geom_col()
+print(g) 
+
+misboxplots <- ggplot(df, aes(x = Tipo, y = AE)) + geom_boxplot()
+print(misboxplots)
+
+```
+
+## EJERCICIO 2
+
+### Ejercicio 2.1
+
+Calcular el intervalo de confianza de la capacidad pulmonar de toda la muestra. El nivel de confianza es 95 %.
+Realizar el cálculo manualmente sin usar las funciones t.test o equivalentes. Podéis usar qnorm, qt, pnorm,
+pt, ... En cuanto a la elección del método para el cálculo del intervalo de confianza, debéis justificar vuestra
+elección.
+
+```{r}
+
+
+
+```
+
+
